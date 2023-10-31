@@ -51,22 +51,43 @@ regd_users.put("/review/:isbn", (req, res) => {
 	const book = Object.values(books).filter((book) => book.ISBN === isbn)[0];
 	if (book) {
 		if (Object.values(book.reviews).filter((review) => review.user === user)) {
+			book.reviews.user = user;
+			book.reviews.review = review;
+
+			console.log(JSON.stringify(books)); // Access the book object directly using the ISBN
+
+			return res.status(200).json({
+				message: "This user has already reviewed this book, updating content",
+			});
+		} else {
 			book.reviews[`${Object.keys(book.reviews).length + 1}`] = {
 				user,
 				review,
 			};
-			console.log(JSON.stringify(books)); // Access the book object directly using the ISBN
-
-			return res.status(200).json({ message: "Review added successfully" });
-		} else {
-			book.reviews.review = review;
 			return res.status(208).json({
-				message: "This user has already reviewed this book, updating content",
+				message: "Review added successfully",
 			});
 		}
 	}
 
 	return res.status(404).json({ message: "Book not found" });
 });
+
+regd_users.delete("/review/:isbn", (req, res) => {
+	const isbn = req.params.isbn;
+	const user = req.session.authorization.username;
+	const book = Object.values(books).filter((book) => book.ISBN === isbn)[0];
+	if (book) {
+		if (Object.values(book.reviews).filter((review) => review.user === user)) {
+			delete book.reviews.review;
+			return res.status(200).json({ message: "Review deleted successfully" });
+		} else {
+			return res.status(208).json({
+				message: "This user has not reviewed this book",
+			});
+		}
+	}
+});
+
 module.exports.authenticated = regd_users;
 module.exports.users = users;
