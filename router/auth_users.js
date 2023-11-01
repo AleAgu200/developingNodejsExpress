@@ -80,6 +80,7 @@ regd_users.delete("/review/:isbn", (req, res) => {
 	if (book) {
 		if (Object.values(book.reviews).filter((review) => review.user === user)) {
 			delete book.reviews.review;
+			delete book.reviews.user;
 			return res.status(200).json({ message: "Review deleted successfully" });
 		} else {
 			return res.status(208).json({
